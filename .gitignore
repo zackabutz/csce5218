@@ -2,3 +2,11 @@ venv/
 .venv/
 __pycache__/
 .ipynb_checkpoints/
+*.md
+*.aux
+*.fdb*
+*.fls
+*.log
+*.synctex.gz
+tmp/
+output/
