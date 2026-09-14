@@ -1,0 +1,241 @@
+\documentclass[11pt]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{enumitem}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.55em}
+\newcommand{\answerspace}[1]{\vspace{#1}}
+
+\begin{document}
+
+\begin{center}
+{\Large \textbf{Week 5: Perceptron Learning with Binary Cross-Entropy}}\\
+CSCE 5218 -- Deep Learning
+\end{center}
+
+\textbf{Name: Zack Butz} \hfill \textbf{Date: \today} 
+
+\section*{Given}
+
+For training example $k$, use
+\[
+i_k = \sum_{i=0}^{n} w_i x_{ki} = \mathbf{w}^{T}\mathbf{x}_k,
+\qquad
+y_k = \sigma(i_k) = \frac{1}{1+e^{-i_k}},
+\]
+where $t_k \in \{0,1\}$, $x_{k0}=1$, and
+\[
+L_k = -\left[t_k\ln(y_k)+(1-t_k)\ln(1-y_k)\right].
+\]
+
+\section*{1. Loss derivative}
+
+\textbf{Question.} Derive $\partial L_k/\partial y_k$ and simplify it to one fraction.
+
+\begin{enumerate}[label=\arabic*.]
+    \item Expand the negative sign and differentiate each logarithm term with respect to $y_k$.
+    \[
+    L_k = -t_k\ln(y_k) - (1-t_k)\ln(1-y_k)
+    \]
+    \[
+    \frac{\partial L_k}{\partial y_k}
+    = -\frac{t_k}{y_k} + \frac{1-t_k}{1-y_k}
+    \]
+
+    \item Put the terms over the common denominator $y_k(1-y_k)$.
+    \[
+    \frac{\partial L_k}{\partial y_k}
+    = -\frac{t_k(1-y_k)}{y_k(1-y_k)}
+      + \frac{(1-t_k)y_k}{y_k(1-y_k)}
+    \]
+    \[
+    \frac{\partial L_k}{\partial y_k}
+    = \frac{-t_k(1-y_k) + (1-t_k)y_k}{y_k(1-y_k)}
+    \]
+
+    \item Show how the numerator simplifies.
+    \[
+    -t_k(1-y_k) + (1-t_k)y_k
+    = -t_k + t_ky_k + y_k - t_ky_k
+    = y_k-t_k
+    \]
+
+    \item Substitute the simplified numerator back into the fraction.
+    \[
+    \boxed{
+    \frac{\partial L_k}{\partial y_k}
+    = \frac{y_k-t_k}{y_k(1-y_k)}
+    }
+    \]
+\end{enumerate}
+
+\section*{2. Parameter gradients}
+
+\textbf{Question.} Use the chain rule to derive $\partial L_k/\partial w_j$ for $j=0,\ldots,n$. Show every local derivative.
+
+Use the computational path $w_j \rightarrow i_k \rightarrow y_k \rightarrow L_k$.
+
+\begin{enumerate}[label=\arabic*.]
+    \item Write the chain rule.
+    \[
+    \frac{\partial L_k}{\partial w_j}
+    = \frac{\partial L_k}{\partial y_k}
+      \frac{\partial y_k}{\partial i_k}
+      \frac{\partial i_k}{\partial w_j}
+    \]
+    \item Fill in the three local derivatives.
+    \[
+    \frac{\partial L_k}{\partial y_k}=\frac{y_k-t_k}{y_k(1-y_k)} \qquad
+    \frac{\partial y_k}{\partial i_k}=y_k(1-y_k) \qquad
+    \frac{\partial i_k}{\partial w_j}=x_{kj}
+    \]
+    \item Substitute them and explicitly cancel common factors.
+    \[
+    \frac{\partial L_k}{\partial w_j}
+    =
+    \left(\frac{y_k-t_k}{y_k(1-y_k)}\right)
+    \left(y_k(1-y_k)\right)
+    x_{kj}
+    \]
+    \[
+    \frac{\partial L_k}{\partial w_j}
+    =
+    (y_k-t_k)x_{kj}.
+    \]
+    \item Explain why the same formula includes the bias. What happens when $j=0$ and $x_{k0}=1$?
+    The formula includes the bias so that the model can classify data which is not seperable \\
+    through the origin acting like a boundary condition for the formula. When $j=0$ and $x_{k0}=1$, \\ 
+    the gradient is simply $y_k-t_k$.
+\end{enumerate}
+
+\section*{3. Gradient-descent update}
+
+\textbf{Question.} Write one update rule that applies to every $w_j$, including $w_0$, using learning rate $\eta$.
+
+\begin{enumerate}[label=\arabic*.]
+    \item Start from gradient descent:
+    \[
+    w_j \leftarrow w_j - \eta\frac{\partial L_k}{\partial w_j}.
+    \]
+    \item Substitute your simplified gradient.
+    \[
+    w_j \leftarrow w_j - \eta(y_k-t_k)x_{kj}
+    \]
+    \item When $x_{kj}>0$, explain what happens to $w_j$ when $t_k-y_k>0$, and when $t_k-y_k<0$. \\
+    When $x_{kj}>0$ and $t_k-y_k>0$, the update is positive, so
+    $w_j$ increases. When $t_k-y_k<0$, the update is negative, so
+    $w_j$ decreases.
+\end{enumerate}
+\pagebreak
+\section*{4. One numerical update}
+
+Use
+\[
+\mathbf{x}_k=(1,1,2),\qquad
+\mathbf{w}=(0,0.2,-0.1),\qquad
+t_k=1,\qquad
+\eta=0.1.
+\]
+Report nonlinear values to four decimal places.
+
+\subsection*{4.1 Forward pass before the update}
+\[
+i_k = w_0x_{k0}+w_1x_{k1}+w_2x_{k2} = \mathbf{w}^T\mathbf{x}_k
+\]
+\[
+y_k=\sigma(i_k)=\frac{1}{1+e^{-i_k}}
+\]
+\[
+L_k=-\left[t_k\ln(y_k)+(1-t_k)\ln(1-y_k)\right]
+\]
+\[
+\frac{\partial L_k}{\partial w_j}
+=
+(y_k-t_k)x_{kj}.
+\]
+\[
+w_j \leftarrow w_j - \eta(y_k-t_k)x_{kj}
+\]
+
+\subsection*{4.2 Gradients}
+\[
+\frac{\partial L_k}{\partial w_0}=(\frac{1}{1+e^{0}}-1)1\qquad
+\frac{\partial L_k}{\partial w_1}=(\frac{1}{1+e^{0}}-1)1\qquad
+\frac{\partial L_k}{\partial w_2}=(\frac{1}{1+e^{0}}-1)2
+\]
+\[
+\frac{\partial L_k}{\partial w_0}=-\frac{1}{2}\qquad
+\frac{\partial L_k}{\partial w_1}=-\frac{1}{2}\qquad
+\frac{\partial L_k}{\partial w_2}=-1
+\]
+
+\subsection*{4.3 Updated parameters}
+\[
+w_0^{\text{new}}=0 - 0.1(-0.5) = 0.05 \qquad
+w_1^{\text{new}}=0.2 - 0.1(-0.5) = 0.25 \qquad
+w_2^{\text{new}}=-0.1 - 0.1(-1) = 0  
+\]
+
+\subsection*{4.4 Forward pass after the update}
+\[
+i_k^{\text{new}}=(0.05)(1)+(0.25)(1)+(0)(2)=0.3
+\]
+\[
+y_k^{\text{new}}=\sigma(0.3)=\frac{1}{1+e^{-0.3}}\approx 0.5744
+\]
+\[
+L_k^{\text{old}}=-\left[1\ln(0.5)+(1-1)\ln(1-0.5)\right] = -\ln(0.5) \approx 0.6931
+\]
+\[
+L_k^{\text{new}}=-\left[1\ln(0.5744)+(1-1)\ln(1-0.5744)\right] = -\ln(0.5744) \approx 0.5544
+\]
+
+
+Briefly verify whether the loss moved in the expected direction.
+The loss decreased from $L_k\approx 0.6931$ to $L_k^{\text{new}}\approx 0.5544$, 
+which is the expected direction since the value of $y_k$ is closer to its expected 
+value of 1 after the update.
+
+\section*{5. Comparison with squared error}
+
+\textbf{Question.} For a sigmoid neuron, why does squared error retain $y_k(1-y_k)$ in its weight gradient while BCE does not? What can happen near sigmoid outputs of 0 or 1?
+
+\begin{enumerate}[label=\arabic*.]
+    \item If $E_k=\tfrac12(t_k-y_k)^2$, write its chain-rule gradient with respect to $w_j$.
+    \[
+    \frac{\partial E_k}{\partial w_j}= \frac{\partial E_k}{\partial y_k}
+      \frac{\partial y_k}{\partial i_k}
+      \frac{\partial i_k}{\partial w_j}
+    \]
+    \[
+    \frac{\partial E_k}{\partial y_k} = -(t_k-y_k) = y_k-t_k
+    \]
+    \[
+    \frac{\partial y_k}{\partial i_k} = y_k(1-y_k)
+    \]
+    \[
+    \frac{\partial i_k}{\partial w_j} = x_{kj}
+    \]
+    \[
+    \frac{\partial E_k}{\partial w_j} = (y_k-t_k)y_k(1-y_k)x_{kj}
+    \]
+    \item Explain one training consequence when $y_k$ is close to 0 or 1. \\
+    When $y_k$ is close to 0 or 1, the term $y_k(1-y_k)$ becomes very small, 
+    which can lead to attenuated gradients. This means that the weight updates
+    will be very small, slowing down the learning process and making it 
+    difficult for the model to converge to an optimal solution.
+    This is one of the reasons why BCE is preferred over squared error 
+    for classification tasks, as it avoids this issue and provides more stable 
+    gradients due to removing the extra sigmoid derivative factor seen in section 2 part 3.
+
+\end{enumerate}
+
+\section*{AI assistance disclosure}
+
+Initial bootstrapping for this homework was provided by ChatGPT. 
+All subsequent work, including derivations, calculations, and explanations, was completed by me.
+
+\end{document}
