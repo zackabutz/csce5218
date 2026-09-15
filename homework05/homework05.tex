@@ -106,8 +106,8 @@ Use the computational path $w_j \rightarrow i_k \rightarrow y_k \rightarrow L_k$
     (y_k-t_k)x_{kj}.
     \]
     \item Explain why the same formula includes the bias. What happens when $j=0$ and $x_{k0}=1$?
-    The formula includes the bias so that the model can classify data which is not seperable \\
-    through the origin acting like a boundary condition for the formula. When $j=0$ and $x_{k0}=1$, \\ 
+    The formula includes the bias so that the model can classify data which is not separable 
+    through the origin acting like a boundary condition for the formula. When $j=0$ and $x_{k0}=1$, 
     the gradient is simply $y_k-t_k$.
 \end{enumerate}
 
@@ -141,26 +141,23 @@ t_k=1,\qquad
 \]
 Report nonlinear values to four decimal places.
 
-\subsection*{4.1 Forward pass before the update}
+\subsection*{4.1 Compute $in_k$, $y_k$, and $L_k$}
 \[
-i_k = w_0x_{k0}+w_1x_{k1}+w_2x_{k2} = \mathbf{w}^T\mathbf{x}_k
+i_k = w_0x_{k0}+w_1x_{k1}+w_2x_{k2} 
+= 1\times0 + 1\times0.2 + 2\times(-0.1) = 0
 \]
 \[
-y_k=\sigma(i_k)=\frac{1}{1+e^{-i_k}}
+y_k=\sigma(i_k)=\frac{1}{1+e^{0}} = 0.5000
 \]
 \[
-L_k=-\left[t_k\ln(y_k)+(1-t_k)\ln(1-y_k)\right]
-\]
-\[
-\frac{\partial L_k}{\partial w_j}
-=
-(y_k-t_k)x_{kj}.
-\]
-\[
-w_j \leftarrow w_j - \eta(y_k-t_k)x_{kj}
+L_k^{\text{old}}=-\left[1\ln(0.5)+(1-1)\ln(1-0.5)\right] = -\ln(0.5) \approx 0.6931
 \]
 
-\subsection*{4.2 Gradients}
+\subsection*{4.2 Compute the Gradients}
+\[
+\frac{\partial L_k}{\partial w_j}=(y_k-t_k)x_{kj}.
+\]
+
 \[
 \frac{\partial L_k}{\partial w_0}=(\frac{1}{1+e^{0}}-1)1\qquad
 \frac{\partial L_k}{\partial w_1}=(\frac{1}{1+e^{0}}-1)1\qquad
@@ -172,16 +169,19 @@ w_j \leftarrow w_j - \eta(y_k-t_k)x_{kj}
 \frac{\partial L_k}{\partial w_2}=-1
 \]
 
-\subsection*{4.3 Updated parameters}
+\subsection*{4.3 Compute the Updated parameters}
 \[
-w_0^{\text{new}}=0 - 0.1(-0.5) = 0.05 \qquad
-w_1^{\text{new}}=0.2 - 0.1(-0.5) = 0.25 \qquad
-w_2^{\text{new}}=-0.1 - 0.1(-1) = 0  
+w_j \leftarrow w_j - \eta(y_k-t_k)x_{kj}
+\]
+\[
+w_0^{\text{new}}=0 - 0.1(-0.5) = 0.0500 \qquad
+w_1^{\text{new}}=0.2 - 0.1(-0.5) = 0.2500 \qquad
+w_2^{\text{new}}=-0.1 - 0.1(-1) = 0.0000  
 \]
 
-\subsection*{4.4 Forward pass after the update}
+\subsection*{4.4 Recompute the prediction and loss after the update}
 \[
-i_k^{\text{new}}=(0.05)(1)+(0.25)(1)+(0)(2)=0.3
+i_k^{\text{new}}=(0.05)(1)+(0.25)(1)+(0)(2)=0.3000
 \]
 \[
 y_k^{\text{new}}=\sigma(0.3)=\frac{1}{1+e^{-0.3}}\approx 0.5744
@@ -195,8 +195,8 @@ L_k^{\text{new}}=-\left[1\ln(0.5744)+(1-1)\ln(1-0.5744)\right] = -\ln(0.5744) \a
 
 
 Briefly verify whether the loss moved in the expected direction.
-The loss decreased from $L_k\approx 0.6931$ to $L_k^{\text{new}}\approx 0.5544$, 
-which is the expected direction since the value of $y_k$ is closer to its expected 
+The loss decreased from $L_k^{\text{old}}\approx 0.6931$ to $L_k^{\text{new}}\approx 0.5544$, 
+which is the expected direction since the value of $y_k$ is closer to the target 
 value of 1 after the update.
 
 \section*{5. Comparison with squared error}
@@ -229,13 +229,15 @@ value of 1 after the update.
     difficult for the model to converge to an optimal solution.
     This is one of the reasons why BCE is preferred over squared error 
     for classification tasks, as it avoids this issue and provides more stable 
-    gradients due to removing the extra sigmoid derivative factor seen in section 2 part 3.
+    gradients due to removing the extra sigmoid derivative factor seen in section 
+    2 part 3.
 
 \end{enumerate}
 
 \section*{AI assistance disclosure}
 
 Initial bootstrapping for this homework was provided by ChatGPT. 
-All subsequent work, including derivations, calculations, and explanations, was completed by me.
+All subsequent work, including derivations, calculations, and explanations, 
+was completed by me.
 
 \end{document}
